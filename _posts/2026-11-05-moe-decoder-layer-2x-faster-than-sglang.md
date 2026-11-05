@@ -7,7 +7,7 @@ description: "Two weeks in the Muse Spark Open Kernel Challenge: the agent setup
 
 For two weeks in October and November I took part in the [Muse Spark Open Kernel Challenge](https://openkernelchallenge.dev). The task: take one complete decoder layer of a mixture-of-experts LLM (attention, router, NVFP4 experts, every norm and residual) and make it run faster than SGLang's implementation on an NVIDIA H200. More than 2,000 teams entered.
 
-Our final submission runs **2.06x faster than SGLang** overall, and 2.32x on single-request decode. That put us at rank 516 of 1,299 on the decode-layer board, inside the top 40 %. The winner reached 2.61x.
+Our final submission runs **2.06x faster than SGLang** overall, and 2.32x on single-request decode. That finished ahead of about 1,500 teams.
 
 I didn't write the CUDA by hand. I came in to learn GPU kernel optimization, not as a CUDA engineer, so I ran the challenge as an experiment with a second question: how far can one person get by setting up and steering AI agents? This post is about that setup, what moved the number, what didn't, and what the hardware taught us. Everything, the failures included, is in the [repo](https://github.com/razramon/openkernelchallenge-submission).
 
@@ -19,7 +19,16 @@ I didn't write the CUDA by hand. I came in to learn GPU kernel optimization, not
 - **Sub-agents took the independent tracks.** When the work split (expert kernels, full attention, verify attention), the coordinator launched sub-agents, each with its own version numbers and job ids so they never collided, and they handed their results back.
 - **A job bridge connected it all to my PC** (WSL + Docker). Through it the coordinator reached the RTX 5090 (correctness tests, plus local Ollama agents that proposed ideas), the rented H200s (timing) and the contest judge.
 
-My part was setting this up and steering it: which ideas to chase, when to gamble on a big rewrite, and approving every rented GPU hour. In total that was 51 pod sessions, at least 66 GPU-hours and $290.
+## Renting GPUs
+
+The 5090 can tell you whether a kernel is correct, but not how fast it runs on an H200. So we rented H200s by the hour for three things: timing two versions against each other, nsys timelines of a whole layer, and profiler counters. Over the two weeks that came to 51 sessions on Runpod and Lium, each pod terminated as soon as its jobs were done.
+
+Not every H200 was the H200 we needed:
+
+- **A spot node exposed a real risk.** One night the node we had been using disappeared from the listing, so we moved to a cheaper spot H200. On that fresh machine, compiling our CUDA modules was so slow that the prepare-time tuner ran out of time and quietly fell back to a generic expert kernel for every shape. We should have taken the warning more seriously: later in the contest the judge's environment changed, prepare ran out of time there too, and we had to add deadlines with known-good fallbacks. Spot nodes can also disappear mid-run.
+- **Power caps.** One pod had a 630 W cap, and the expert kernel's clock fell from 1.74 to 0.58 GHz halfway through. Some nodes were the 600 W NVL variant, which also runs slower than the judge's SXM. After that, every pod timing came with its clock and power readings.
+- **No counters.** The single-GPU H200 SXM nodes on offer had profiler counters disabled, so for one session we rented an H100, the same architecture, just to read them.
+- **Logistics.** Stopped pods often couldn't restart ("host full"), so every pause meant a new pod. One image pull took 27 minutes, and two pods lost their whole session to a full disk and a failed image pull.
 
 ## Why a decode layer is a memory problem
 
@@ -51,11 +60,9 @@ So nearly every win was one of three things: read fewer bytes, start reading the
 
 **Work stealing in the expert kernel.** Letting idle thread blocks take units from the busiest expert was correct on every test, but 0–6 % slower per job at the judge's load.
 
-## What the hardware taught us
+## What measuring taught us
 
 **The 5090 is a correctness lab, not a stopwatch.** It's a different architecture (no wgmma, no TMA multicast, 99 KB of shared memory per block instead of 227 KB), and its 96 MB L2 keeps test weights cached, so memory-bound kernels look compute-bound. It caught races, deadlocks and wrong answers for free, thousands of times. Its timings never picked a winner.
-
-**Rented H200s are not all the same H200.** One pod had a 630 W power cap, and the expert kernel's clock fell from 1.74 to 0.58 GHz halfway through. Some nodes were the 600 W NVL variant, some had profiler counters disabled, some couldn't restart after being stopped, and one image pull took 27 minutes. After that, every pod timing came with its clock and power reasons.
 
 **Our test workload was wrong for days.** Our harness routed tokens to a lighter set of experts than the judge did: at batch 1, about 1 active expert instead of 2.5. That hid a 10 µs gap, and every pod comparison of an MoE change was measured at the wrong load. The fix was two lines.
 
@@ -64,7 +71,7 @@ So nearly every win was one of three things: read fewer bytes, start reading the
 ## What I'm taking away
 
 - **Read the scoring formula before optimizing.** Here, 1 µs saved on single-request sliding decode was worth as much as 15 µs on batch-32 full verify.
-- **Make the test workload identical to the scored one** before trusting any measurement.
+- **Test on exactly what you're scored on.** A benchmark that is almost the same can hide the very gap you're looking for.
 - **Measure in the whole system.** When kernels overlap, a faster kernel in isolation can be no faster in place.
 - **Write everything down.** For the agents, the notebook was the only memory that survived, and most good ideas came from re-reading it.
 
