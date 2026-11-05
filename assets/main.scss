@@ -10,10 +10,31 @@
   line-height: $base-line-height * $base-font-size * 2.25;
 
   a {
-    color: $text-color;
-    margin-left: 20px;
+    display: inline-block;
+    margin-left: 18px;
+    vertical-align: middle;
   }
 }
+
+.link-icon {
+  width: 20px;
+  height: 20px;
+  fill: $grey-color-dark;
+  vertical-align: middle;
+}
+
+.site-links a:hover .link-icon { fill: $brand-color; }
+
+/* "All posts" links on post pages */
+.back-link {
+  @include relative-font-size(0.875);
+  margin-bottom: 12px;
+
+  a, a:visited { color: $grey-color; }
+  a:hover { color: $brand-color; text-decoration: none; }
+}
+
+.back-link-bottom { margin-top: $spacing-unit; }
 
 .theme-toggle {
   float: right;
@@ -34,7 +55,7 @@
 
 @include media-query($on-palm) {
   .site-title { @include relative-font-size(1.25); }
-  .site-links a { margin-left: 12px; }
+  .site-links a { margin-left: 14px; }
   .theme-toggle { margin-left: 12px; }
 }
 
@@ -50,7 +71,10 @@ html[data-theme="dark"] {
 
   .site-header { border-top-color: #e6e6e6; border-bottom-color: #2a2b2e; }
   .site-title { color: #f2f2f2; }
-  .site-links a, .site-links a:visited { color: #e6e6e6; }
+  .link-icon { fill: #e6e6e6; }
+  .site-links a:hover .link-icon { fill: #7ab3ff; }
+  .back-link a, .back-link a:visited { color: #9a9ba0; }
+  .back-link a:hover { color: #7ab3ff; }
 
   .theme-toggle {
     border-color: #3a3b3f;
