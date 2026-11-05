@@ -5,11 +5,15 @@ date: 2024-06-17
 description: "A walkthrough of our CVPR 2024 Workshops paper: a 71k-parameter unsupervised tracker that works on events, frames or both."
 ---
 
-This is a walkthrough of ED-DCFNet, the paper from my M.Sc. research at the NBEL lab with Hadar Cohen-Duwek and Elishai Ezra Tsur, published at the CVPR 2024 Workshops. The code and our dataset are on GitHub: [NBELab/UnsupervisedTracking](https://github.com/NBELab/UnsupervisedTracking).
+This is a walkthrough of ED-DCFNet, the paper from my research at the NBEL lab with Hadar Cohen-Duwek and Elishai Ezra Tsur, published at the CVPR 2024 Workshops. The code and our dataset are on GitHub: [NBELab/UnsupervisedTracking](https://github.com/NBELab/UnsupervisedTracking).
 
 ## Event cameras in one paragraph
 
 A normal camera takes full frames at a fixed rate. An event camera doesn't take frames at all. Each pixel reports on its own, whenever its brightness changes, as an event with a position, a timestamp and a polarity (brighter or darker). That gives very high temporal resolution, high dynamic range, almost no motion blur and very low power, which makes event cameras attractive for tracking on small embedded devices. The catch: a static scene produces no events, texture is hard to see, and the data looks nothing like the images most vision models are trained on.
+
+![A frame camera and an event camera watching the same rolling ball](/assets/img/ed-dcfnet/event-camera.gif)
+
+*A simulation of the same scene seen by both cameras. The frame camera repeats the static background in every frame and blurs the fast ball. The event camera stays silent wherever nothing changes and reports only the moving edges: blue where a pixel got brighter, red where it got darker.*
 
 ## The problem we went after
 
