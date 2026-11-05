@@ -1,0 +1,29 @@
+# Site settings. GitHub Pages builds this with Jekyll and the minima theme; no build step on your side.
+title: Raz Ramon
+description: Notes on GPU kernels, edge inference and computer vision.
+author: Raz Ramon
+url: "https://razramon.github.io"
+baseurl: ""
+timezone: Asia/Jerusalem
+
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# minima options
+github_username: razramon
+linkedin_username: raz-ramon-31433ba0
+show_excerpts: true
+header_pages:
+  - about.md
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
