@@ -23,7 +23,9 @@ DCFNet's idea was to learn the features end to end through this closed-form filt
 
 ## The model
 
-![ED-DCFNet: two encoders, a shared decoder, DCFNet branches and the correlation filter](/assets/img/ed-dcfnet/architecture.png)
+![ED-DCFNet: an events encoder and a frames encoder, a shared decoder, and DCFNet branches as skip connections, summed into the tracking features](/assets/img/ed-dcfnet/architecture.png)
+
+*The architecture, from the [project repo](https://github.com/NBELab/UnsupervisedTracking).*
 
 - **Events become a voxel grid.** The time window is split into 5 bins, and each event's polarity is spread into the neighbouring bins according to its timestamp. That keeps the order of events inside the window while giving a dense tensor a CNN can read.
 - **Two encoders, one shared decoder.** An event encoder (5 input channels) and a frame encoder (1 grayscale channel) map each input into features, and a decoder shared by both maps them into the same feature space. The shared decoder is what pushes events and frames toward features that mean the same thing.
@@ -34,6 +36,10 @@ The whole hybrid model has 71,424 parameters.
 ## Training without labels
 
 There are no bounding boxes anywhere in training. It uses forward-backward consistency: take a template and two later inputs, track forward from the template to the first and from the first to the second, then track backward from the second to the template's frame. If the features are good, the backward response lands back on the template's center as a sharp peak. The loss is the distance between that backward response and a Gaussian at the center. For the hybrid model it is a weighted sum over the fused, frame-only and event-only features (0.5, 0.3 and 0.2).
+
+![Training: forward tracking from the template to two search inputs, then backward tracking to the template, scored by a consistency loss](/assets/img/ed-dcfnet/framework_design.png)
+
+*Forward-backward training, from the [project repo](https://github.com/NBELab/UnsupervisedTracking).*
 
 The training data is synthetic. We used the ESIM simulator to generate events and grayscale frames from 111 ten-second videos of COCO objects moving with affine motions (translation, rotation, scaling) at different speeds. Four sequence augmentations add variety to the motion: reversing the sequence, inverting the polarity of every event, shuffling the search inputs, and a "fastback" that replaces the last input with the template to create a sudden return.
 

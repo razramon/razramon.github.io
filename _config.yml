@@ -20,8 +20,6 @@ kramdown:
 github_username: razramon
 linkedin_username: raz-ramon-31433ba0
 show_excerpts: true
-header_pages:
-  - about.md
 
 exclude:
   - README.md

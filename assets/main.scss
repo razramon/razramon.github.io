@@ -1,0 +1,74 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+
+@import "minima";
+
+/* Header: name, links and the light / dark switch on one line */
+.site-links {
+  float: right;
+  line-height: $base-line-height * $base-font-size * 2.25;
+
+  a {
+    color: $text-color;
+    margin-left: 20px;
+  }
+}
+
+.theme-toggle {
+  float: right;
+  width: 30px;
+  height: 30px;
+  margin: 12px 0 0 20px;
+  padding: 0;
+  border: 1px solid $grey-color-light;
+  border-radius: 50%;
+  background: transparent;
+  color: $grey-color-dark;
+  font-size: 15px;
+  line-height: 28px;
+  cursor: pointer;
+
+  .icon-light { display: none; }
+}
+
+@include media-query($on-palm) {
+  .site-title { @include relative-font-size(1.25); }
+  .site-links a { margin-left: 12px; }
+  .theme-toggle { margin-left: 12px; }
+}
+
+/* Dark mode */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  body { color: #e6e6e6; background-color: #111214; }
+
+  a { color: #7ab3ff; }
+  a:visited { color: #b3a4ff; }
+  a:hover { color: #a9ccff; }
+
+  .site-header { border-top-color: #e6e6e6; border-bottom-color: #2a2b2e; }
+  .site-title { color: #f2f2f2; }
+  .site-links a, .site-links a:visited { color: #e6e6e6; }
+
+  .theme-toggle {
+    border-color: #3a3b3f;
+    color: #e6e6e6;
+    .icon-dark { display: none; }
+    .icon-light { display: inline; }
+  }
+
+  .post-meta { color: #9a9ba0; }
+  .post-content img { background-color: #fff; border-radius: 6px; padding: 8px; }   /* figures with transparent backgrounds */
+  blockquote { color: #a0a1a6; border-left-color: #3a3b3f; }
+
+  pre, code { background-color: #1b1c1f; border-color: #2a2b2e; color: #e6e6e6; }
+  .highlight, .highlighter-rouge .highlight { background: #1b1c1f; }
+  .highlight span { color: #e6e6e6; background-color: transparent; }
+
+  table { color: #d0d1d4; border-color: #2a2b2e; }
+  table tr:nth-child(even) { background-color: #18191c; }
+  table th { background-color: #1e1f23; border-color: #2a2b2e; }
+  table td { border-color: #2a2b2e; }
+}
